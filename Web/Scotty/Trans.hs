@@ -127,6 +127,8 @@ defaultHandler :: (ScottyError e, Monad m) => (e -> ActionT e m ()) -> ScottyT e
 -- 最终生成ScottyT
 -- modify :: MonadState s m => (s -> s) -> m ()
 -- 先构建ErrorHandler
+-- 此时返回的是一个ScottyT结构，实际上是封装了一个待执行的函数
+-- modify 需要执行上下文
 defaultHandler f = ScottyT $ modify $ addHandler $ Just (\e -> status status500 >> f e)
 
 -- | Use given middleware. Middleware is nested such that the first declared
