@@ -105,7 +105,6 @@ scottyAppT runActionToIO defs = do
     -- Evaluate a state computation with the given initial state
     -- and return the final state, discarding the final value.
     -- def是Data.Default.Class的函数，根据类型推导会自动反射为相应的instance的def
-    -- 此处是将defs
     let s = execState (runS defs) def
     let rapp req callback = runActionToIO (foldl (flip ($)) notFoundApp (routes s) req) >>= callback
     return $ foldl (flip ($)) rapp (middlewares s)

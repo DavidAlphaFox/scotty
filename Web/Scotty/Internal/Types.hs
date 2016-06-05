@@ -64,9 +64,11 @@ data ScottyState e m =
 instance Default (ScottyState e m) where
     def = ScottyState [] [] Nothing
 -- 添加中间件
--- 
+-- 此处的中间件是负荷Wai.Middleware规范的
 addMiddleware :: Wai.Middleware -> ScottyState e m -> ScottyState e m
 addMiddleware m s@(ScottyState {middlewares = ms}) = s { middlewares = m:ms }
+
+-- 添加路由
 
 addRoute :: Middleware m -> ScottyState e m -> ScottyState e m
 addRoute r s@(ScottyState {routes = rs}) = s { routes = r:rs }
