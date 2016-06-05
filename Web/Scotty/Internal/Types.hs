@@ -60,19 +60,24 @@ data ScottyState e m =
                 , routes :: [Middleware m]
                 , handler :: ErrorHandler e m
                 }
-
+-- 默认的 ScottyState
 instance Default (ScottyState e m) where
     def = ScottyState [] [] Nothing
-
+-- 添加中间件
+-- 
 addMiddleware :: Wai.Middleware -> ScottyState e m -> ScottyState e m
 addMiddleware m s@(ScottyState {middlewares = ms}) = s { middlewares = m:ms }
 
 addRoute :: Middleware m -> ScottyState e m -> ScottyState e m
 addRoute r s@(ScottyState {routes = rs}) = s { routes = r:rs }
 
+-- 第一个参数是handler
+-- 第二个参数是ScottyState
 addHandler :: ErrorHandler e m -> ScottyState e m -> ScottyState e m
 addHandler h s = s { handler = h }
-
+-- runS是ScottyT的域
+-- 状态类型是(ScottyState e m) 
+-- 结果类型是a
 newtype ScottyT e m a = ScottyT { runS :: State (ScottyState e m) a }
     deriving ( Functor, Applicative, Monad )
 
@@ -99,7 +104,7 @@ instance ScottyError e => ScottyError (ActionError e) where
     showError Next            = pack "Next"
     showError Finish          = pack "Finish"
     showError (ActionError e) = showError e
-
+-- 接收一个异常参数，返回ActionT
 type ErrorHandler e m = Maybe (e -> ActionT e m ())
 
 ------------------ Scotty Actions -------------------
