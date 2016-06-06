@@ -106,10 +106,17 @@ scottyAppT runActionToIO defs = do
     -- and return the final state, discarding the final value.
     -- def是Data.Default.Class的函数，根据类型推导会自动反射为相应的instance的def
     let s = execState (runS defs) def
+    -- s是ScottyState
+    -- foldl :: Foldable t => (b -> a -> b) -> b -> t a -> b
+    -- (flip ($)) :: a -> (a -> c) -> c
+    -- 那么routes的类型应该是 t (a -> c) 一列表的函数
+    -- notFoundApp 是初始值
     let rapp req callback = runActionToIO (foldl (flip ($)) notFoundApp (routes s) req) >>= callback
     return $ foldl (flip ($)) rapp (middlewares s)
 
 notFoundApp :: Monad m => Scotty.Application m
+-- type Application m ::  Request -> m Response
+-- 此处忽略req
 notFoundApp _ = return $ responseBuilder status404 [("Content-Type","text/html")]
                        $ fromByteString "<h1>404: File Not Found!</h1>"
 

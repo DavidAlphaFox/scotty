@@ -83,6 +83,8 @@ addroute method pat action = ScottyT $ MS.modify $ \s -> addRoute (route (handle
 
 route :: (ScottyError e, MonadIO m) => ErrorHandler e m -> StdMethod -> RoutePattern -> ActionT e m () -> Middleware m
 route h method pat action app req =
+    -- 匹配了路由就由路由来做
+    -- 不匹配就交给默认app来做
     let tryNext = app req
     in if Right method == parseMethod (requestMethod req)
        then case matchRoute pat req of

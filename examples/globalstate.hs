@@ -49,6 +49,9 @@ webM = lift
 
 -- Some helpers to make this feel more like a state monad.
 gets :: (AppState -> b) -> WebM b
+-- ask 将(TVar AppState) 提升为 IO (TVar AppState)
+-- readTVarIO 从TVar AppState 读出 IO AppState
+-- liftIO 将 IO AppState 提升到WebM？
 gets f = ask >>= liftIO . readTVarIO >>= return . f
 
 modify :: (AppState -> AppState) -> WebM ()
@@ -58,6 +61,7 @@ main :: IO ()
 main = do
     sync <- newTVarIO def
         -- 'runActionToIO' is called once per action.
+        -- runReaderT :: ReaderT r m a -> r -> m a
     let runActionToIO m = runReaderT (runWebM m) sync
 
     scottyT 3000 runActionToIO app
