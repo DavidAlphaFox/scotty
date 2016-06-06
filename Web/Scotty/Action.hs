@@ -67,6 +67,11 @@ import           Web.Scotty.Util
 -- Just indicates a successful response.
 runAction :: (ScottyError e, Monad m) => ErrorHandler e m -> ActionEnv -> ActionT e m () -> m (Maybe Response)
 runAction h env action = do
+    -- runStateT :: StateT s m a -> s -> m (a, s)
+    -- flip runStateT :: s -> StateT s m a -> m (a, s)
+    -- runReaderT :: ReaderT r m a -> r -> m a
+    -- flip runReaderT :: r -> r m a -> m a
+    -- runExceptT :: ExceptT e m a -> m (Either e a)
     (e,r) <- flip MS.runStateT def
            $ flip runReaderT env
            $ runExceptT
