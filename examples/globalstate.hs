@@ -55,13 +55,19 @@ gets :: (AppState -> b) -> WebM b
 gets f = ask >>= liftIO . readTVarIO >>= return . f
 
 modify :: (AppState -> AppState) -> WebM ()
+-- modifyTVar' :: TVar a -> (a -> a) -> STM()
+-- atomically :: STM a -> IO a
+-- liftIO :: MonadIO m => forall a. IO a -> m a
+-- ask :: MonadReader r m => m r
 modify f = ask >>= liftIO . atomically . flip modifyTVar' f
 
 main :: IO ()
 main = do
+    -- 创建一个初始值
     sync <- newTVarIO def
-        -- 'runActionToIO' is called once per action.
-        -- runReaderT :: ReaderT r m a -> r -> m a
+    -- 'runActionToIO' is called once per action.
+    -- runReaderT :: ReaderT r m a -> r -> m a
+    -- runActionToIO 是Scotty中
     let runActionToIO m = runReaderT (runWebM m) sync
 
     scottyT 3000 runActionToIO app

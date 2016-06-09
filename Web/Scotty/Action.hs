@@ -72,6 +72,7 @@ runAction h env action = do
     -- runReaderT :: ReaderT r m a -> r -> m a
     -- flip runReaderT :: r -> r m a -> m a
     -- runExceptT :: ExceptT e m a -> m (Either e a)
+    -- action 生成  ActionT e m a , runAM
     (e,r) <- flip MS.runStateT def
            $ flip runReaderT env
            $ runExceptT
@@ -290,6 +291,7 @@ setHeader = changeHeader replace
 -- | Set the body of the response to the given 'T.Text' value. Also sets \"Content-Type\"
 -- header to \"text/plain; charset=utf-8\" if it has not already been set.
 text :: (ScottyError e, Monad m) => T.Text -> ActionT e m ()
+-- 接收一个Text类型数据，返回一个ActionT类型的动作
 text t = do
     changeHeader addIfNotPresent "Content-Type" "text/plain; charset=utf-8"
     raw $ encodeUtf8 t
@@ -323,4 +325,5 @@ stream = ActionT . MS.modify . setContent . ContentStream
 -- \"Content-Type\" header, so you probably want to do that on your
 -- own with 'setHeader'.
 raw :: Monad m => BL.ByteString -> ActionT e m ()
+-- 构建ActionT
 raw = ActionT . MS.modify . setContent . ContentBuilder . fromLazyByteString

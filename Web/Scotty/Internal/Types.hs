@@ -78,7 +78,7 @@ addRoute r s@(ScottyState {routes = rs}) = s { routes = r:rs }
 addHandler :: ErrorHandler e m -> ScottyState e m -> ScottyState e m
 addHandler h s = s { handler = h }
 -- runS是ScottyT的域
--- 状态类型是(ScottyState e m) 
+-- 状态类型是(ScottyState e m)
 -- 结果类型是a
 newtype ScottyT e m a = ScottyT { runS :: State (ScottyState e m) a }
     deriving ( Functor, Applicative, Monad )
@@ -140,7 +140,9 @@ data ScottyResponse = SR { srStatus  :: Status
 
 instance Default ScottyResponse where
     def = SR status200 [] (ContentBuilder mempty)
-
+-- ReaderT的域也是个函数runReaderT :: r -> m a
+-- 从Reader变量r转化成m a
+-- ExceptT (m (Either e a))
 newtype ActionT e m a = ActionT { runAM :: ExceptT (ActionError e) (ReaderT ActionEnv (StateT ScottyResponse m)) a }
     deriving ( Functor, Applicative, MonadIO )
 

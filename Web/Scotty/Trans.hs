@@ -142,4 +142,5 @@ defaultHandler f = ScottyT $ modify $ addHandler $ Just (\e -> status status500 
 -- is the outermost middleware (it has first dibs on the request and last action
 -- on the response). Every middleware is run on each request.
 middleware :: Middleware -> ScottyT e m ()
+-- 添加中间件
 middleware = ScottyT . modify . addMiddleware

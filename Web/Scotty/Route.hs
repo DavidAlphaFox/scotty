@@ -80,7 +80,8 @@ notFound action = matchAny (Function (\req -> Just [("path", path req)])) (statu
 -- something
 addroute :: (ScottyError e, MonadIO m) => StdMethod -> RoutePattern -> ActionT e m () -> ScottyT e m ()
 addroute method pat action = ScottyT $ MS.modify $ \s -> addRoute (route (handler s) method pat action) s
-
+-- type Middleware m = Application m -> Application m
+-- type Application m = Request -> m Response
 route :: (ScottyError e, MonadIO m) => ErrorHandler e m -> StdMethod -> RoutePattern -> ActionT e m () -> Middleware m
 route h method pat action app req =
     -- 匹配了路由就由路由来做
@@ -137,7 +138,7 @@ parseRequestBody bl s r =
 mkEnv :: forall m. MonadIO m => Request -> [Param] -> m ActionEnv
 mkEnv req captures = do
     bodyState <- liftIO $ newMVar BodyUntouched
-    
+
     let rbody = requestBody req
         takeAll :: ([B.ByteString] -> IO [B.ByteString]) -> IO [B.ByteString]
         takeAll prefix = rbody >>= \b -> if B.null b then prefix [] else takeAll (prefix . (b:))
@@ -146,11 +147,11 @@ mkEnv req captures = do
         safeBodyReader =  do
           state <- takeMVar bodyState
           let direct = putMVar bodyState BodyCorrupted >> rbody
-          case state of 
-            s@(BodyCached _ []) -> 
-              do putMVar bodyState s 
+          case state of
+            s@(BodyCached _ []) ->
+              do putMVar bodyState s
                  return B.empty
-            BodyCached b (chunk:rest) -> 
+            BodyCached b (chunk:rest) ->
               do putMVar bodyState $ BodyCached b rest
                  return chunk
             BodyUntouched -> direct
@@ -159,12 +160,12 @@ mkEnv req captures = do
         bs :: IO BL.ByteString
         bs = do
           state <- takeMVar bodyState
-          case state of 
-            s@(BodyCached b _) -> 
+          case state of
+            s@(BodyCached b _) ->
               do putMVar bodyState s
                  return b
             BodyCorrupted -> throw BodyPartiallyStreamed
-            BodyUntouched -> 
+            BodyUntouched ->
               do chunks <- takeAll return
                  let b = BL.fromChunks chunks
                  putMVar bodyState $ BodyCached b chunks
@@ -177,7 +178,7 @@ mkEnv req captures = do
                        parseRequestBody wholeBody Parse.lbsBackEnd req
       else return ([], [])
 
-    let 
+    let
         convert (k, v) = (strictByteStringToLazyText k, strictByteStringToLazyText v)
         parameters =  captures ++ map convert formparams ++ queryparams
         queryparams = parseEncodedParams $ rawQueryString req
