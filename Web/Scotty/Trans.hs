@@ -77,6 +77,8 @@ scottyOptsT :: (Monad m, MonadIO n)
 scottyOptsT opts runActionToIO s = do
     when (verbose opts > 0) $
         liftIO $ putStrLn $ "Setting phasers to stun... (port " ++ show (getPort (settings opts)) ++ ") (ctrl-c to quit)"
+    -- (=<<) :: Monad m => (a -> m b) -> m a -> m b
+    -- runSettings :: Settings -> Application -> IO () 
     liftIO . runSettings (settings opts) =<< scottyAppT runActionToIO s
 
 -- | Run a scotty application using the warp server, passing extra options, and
