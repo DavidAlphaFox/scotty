@@ -143,6 +143,8 @@ instance Default ScottyResponse where
 -- ReaderT的域也是个函数runReaderT :: r -> m a
 -- 从Reader变量r转化成m a
 -- ExceptT (m (Either e a))
+-- runExceptT :: ExceptT e m a -> m (Either e a)
+-- 当出现异常的时候，会终止执行
 newtype ActionT e m a = ActionT { runAM :: ExceptT (ActionError e) (ReaderT ActionEnv (StateT ScottyResponse m)) a }
     deriving ( Functor, Applicative, MonadIO )
 

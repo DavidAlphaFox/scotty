@@ -79,6 +79,12 @@ runAction h env action = do
            $ runExceptT
            $ runAM
            $ action `catchError` (defH h)
+    -- catchError :: m a -> (e -> m a) -> m a
+    --  m a `catchError` (e -> m a) -> m a
+    -- runStateT (runReaderT  (runExceptT (runAM (action `catchError` (defH h)))) env) def 
+    -- either :: (a -> c) -> (b -> c) -> Either a b -> c
+    -- 如果处理出现异常了，Left类型，返回Nothing
+    -- 如果处理成功了,Right类型，生成返回结果，返回Just
     return $ either (const Nothing) (const $ Just $ mkResponse r) e
 
 -- | Default error handler for all actions.
