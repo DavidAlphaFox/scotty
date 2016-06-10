@@ -66,6 +66,7 @@ import           Web.Scotty.Util
 -- Nothing indicates route failed (due to Next) and pattern matching should continue.
 -- Just indicates a successful response.
 runAction :: (ScottyError e, Monad m) => ErrorHandler e m -> ActionEnv -> ActionT e m () -> m (Maybe Response)
+-- 此时请求才真正的被执行了
 runAction h env action = do
     -- runStateT :: StateT s m a -> s -> m (a, s)
     -- flip runStateT :: s -> StateT s m a -> m (a, s)

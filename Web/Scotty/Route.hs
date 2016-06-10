@@ -90,6 +90,7 @@ route h method pat action app req =
     in if Right method == parseMethod (requestMethod req)
        then case matchRoute pat req of
             Just captures -> do
+              -- 构建请求上线文
                 env <- mkEnv req captures
                 res <- runAction h env action
                 maybe tryNext return res
