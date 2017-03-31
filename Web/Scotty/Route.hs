@@ -78,10 +78,13 @@ notFound action = matchAny (Function (\req -> Just [("path", path req)])) (statu
 --
 -- >>> curl http://localhost:3000/foo/something
 -- something
+-- 使用Types中的addRoute
 addroute :: (ScottyError e, MonadIO m) => StdMethod -> RoutePattern -> ActionT e m () -> ScottyT e m ()
 addroute method pat action = ScottyT $ MS.modify $ \s -> addRoute (route (handler s) method pat action) s
 -- type Middleware m = Application m -> Application m
 -- type Application m = Request -> m Response
+-- 这个函数是用来生成新的路由函数
+-- 在Scotty构建路由的时候，会从应用中传入方法，URL匹配规则和匹配后执行的函数
 route :: (ScottyError e, MonadIO m) => ErrorHandler e m -> StdMethod -> RoutePattern -> ActionT e m () -> Middleware m
 route h method pat action app req =
     -- 匹配了路由就由路由来做

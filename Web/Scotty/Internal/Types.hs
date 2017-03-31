@@ -55,6 +55,8 @@ type Middleware m = Application m -> Application m
 type Application m = Request -> m Response
 
 --------------- Scotty Applications -----------------
+-- Scotty上线文，放在state中
+-- 其中包括middleware和路由
 data ScottyState e m =
     ScottyState { middlewares :: [Wai.Middleware]
                 , routes :: [Middleware m]
@@ -64,12 +66,12 @@ data ScottyState e m =
 instance Default (ScottyState e m) where
     def = ScottyState [] [] Nothing
 -- 添加中间件
--- 此处的中间件是负荷Wai.Middleware规范的
+-- 此处的中间件是遵循Wai.Middleware规范的
 addMiddleware :: Wai.Middleware -> ScottyState e m -> ScottyState e m
 addMiddleware m s@(ScottyState {middlewares = ms}) = s { middlewares = m:ms }
 
 -- 添加路由
-
+-- 将一个middleware放置在ScottyState的Routes列表中
 addRoute :: Middleware m -> ScottyState e m -> ScottyState e m
 addRoute r s@(ScottyState {routes = rs}) = s { routes = r:rs }
 
@@ -137,9 +139,10 @@ data ScottyResponse = SR { srStatus  :: Status
                          , srHeaders :: ResponseHeaders
                          , srContent :: Content
                          }
-
+-- 默认的返回结果
 instance Default ScottyResponse where
     def = SR status200 [] (ContentBuilder mempty)
+
 -- ReaderT的域也是个函数runReaderT :: r -> m a
 -- 从Reader变量r转化成m a
 -- ExceptT (m (Either e a))

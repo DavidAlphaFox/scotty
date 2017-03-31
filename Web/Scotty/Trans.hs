@@ -107,12 +107,14 @@ scottyAppT runActionToIO defs = do
     -- Evaluate a state computation with the given initial state
     -- and return the final state, discarding the final value.
     -- def是Data.Default.Class的函数，根据类型推导会自动反射为相应的instance的def
+    -- 从默认状态构建应用状态
     let s = execState (runS defs) def
     -- s是ScottyState
     -- foldl :: Foldable t => (b -> a -> b) -> b -> t a -> b
-    -- (flip ($)) :: a -> (a -> c) -> c
+    -- (flip ($)) :: a1 -> (a1 -> c) -> c
     -- 那么routes的类型应该是 t (a -> c) 一列表的函数
     -- notFoundApp 是初始值
+    -- 在foldl中 b = a1， a = a1 -> c
     let rapp req callback = runActionToIO (foldl (flip ($)) notFoundApp (routes s) req) >>= callback
     return $ foldl (flip ($)) rapp (middlewares s)
 
