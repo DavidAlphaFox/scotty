@@ -112,13 +112,18 @@ scottyAppT runActionToIO defs = do
     -- s是ScottyState,其中包含了所有的路由，中间件和异常处理的handler
     -- foldl :: Foldable t => (b -> a -> b) -> b -> t a -> b
     -- (flip ($)) :: a1 -> (a1 -> c) -> c
+    -- Middleware m  = Application m -> Application m
+    -- Application m = Request -> m Response
     -- 那么routes的类型应该是 t (a -> c) 一列表的函数
     -- notFoundApp 是初始值
-    -- 在foldl中 b = a1， a = a1 -> c
-    -- (flip ($)) notFoundApp (routes s) req) ::
-    -- (a1 -> (a1 -> c) -> c) -> a1 -> Middleware m -> 
+    -- foldl (flip ($)) notFoundApp (routes s)
+    -- foldl (flip ($)) :: (a1 -> (a1 -> c) -> c) -> a1 -> t (a1 -> c) -> c
+    -- fold1 (flip ($)) notFoundApp (routes ) ::
+    -- (Application m -> (Application m -> Application m) -> Application m ) -> Application m
+    -- -> t (Application m -> Application m) -> Application m
+    -- 最终得到 Request -> m Response
+    -- (foldl (flip ($)) notFoundApp (routes s) req) 得到 m Response
     let rapp req callback = runActionToIO (foldl (flip ($)) notFoundApp (routes s) req) >>= callback
-    -- foldl :: (b -> a -> b) -> b -> t a -> b
     return $ foldl (flip ($)) rapp (middlewares s)
 
 notFoundApp :: Monad m => Scotty.Application m
