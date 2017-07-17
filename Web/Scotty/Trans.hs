@@ -78,7 +78,7 @@ scottyOptsT opts runActionToIO s = do
     when (verbose opts > 0) $
         liftIO $ putStrLn $ "Setting phasers to stun... (port " ++ show (getPort (settings opts)) ++ ") (ctrl-c to quit)"
     -- (=<<) :: Monad m => (a -> m b) -> m a -> m b
-    -- runSettings :: Settings -> Application -> IO () 
+    -- runSettings :: Settings -> Application -> IO ()
     liftIO . runSettings (settings opts) =<< scottyAppT runActionToIO s
 
 -- | Run a scotty application using the warp server, passing extra options, and
@@ -109,13 +109,16 @@ scottyAppT runActionToIO defs = do
     -- def是Data.Default.Class的函数，根据类型推导会自动反射为相应的instance的def
     -- 从默认状态构建应用状态
     let s = execState (runS defs) def
-    -- s是ScottyState
+    -- s是ScottyState,其中包含了所有的路由，中间件和异常处理的handler
     -- foldl :: Foldable t => (b -> a -> b) -> b -> t a -> b
     -- (flip ($)) :: a1 -> (a1 -> c) -> c
     -- 那么routes的类型应该是 t (a -> c) 一列表的函数
     -- notFoundApp 是初始值
     -- 在foldl中 b = a1， a = a1 -> c
+    -- (flip ($)) notFoundApp (routes s) req) ::
+    -- (a1 -> (a1 -> c) -> c) -> a1 -> Middleware m -> 
     let rapp req callback = runActionToIO (foldl (flip ($)) notFoundApp (routes s) req) >>= callback
+    -- foldl :: (b -> a -> b) -> b -> t a -> b
     return $ foldl (flip ($)) rapp (middlewares s)
 
 notFoundApp :: Monad m => Scotty.Application m
