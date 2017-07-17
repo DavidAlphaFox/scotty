@@ -177,10 +177,20 @@ instance (Monad m, ScottyError e) => MonadPlus (ActionT e m) where
 
 instance MonadTrans (ActionT e) where
     lift = ActionT . lift . lift . lift
-
+-- MonadError 定义
 instance (ScottyError e, Monad m) => MonadError (ActionError e) (ActionT e m) where
     throwError = ActionT . throwError
-
+    -- 对ActionT进行catchError，会返回一个全新的ActionT
+    -- (.) :: (b -> c) -> (a -> b) -> a -> c
+    -- defH :: (ScottyError e, Monad m) => ErrorHandler e m -> ActionError e -> ActionT e m ()
+    -- a = ActionError e , b = ActionT e m ()
+    -- catchError :: m a -> (e -> m a) -> m a
+    --  ActionT (catchError m (runAM . f))中的catchError为
+    -- m `catchE` h = ExceptT $ do
+    --  a <- runExceptT m
+    --  case a of
+    --    Left  l -> runExceptT (h l)
+    --    Right r -> return (Right r)
     catchError (ActionT m) f = ActionT (catchError m (runAM . f))
 
 
