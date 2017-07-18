@@ -174,7 +174,10 @@ instance (Monad m, ScottyError e) => MonadPlus (ActionT e m) where
         case a of
             Left  _ -> runExceptT n
             Right r -> return $ Right r
-
+-- 定义了ActionT是如何从底层提升到高层的
+-- 从 m 提升到(StateT ScottyResponse m)
+-- 再从 (StateT ScottyResponse m) 提升到 (ReaderT ActionEnv (StateT ScottyResponse m))
+-- 最后提升到 ExceptT (ActionError e) (ReaderT ActionEnv (StateT ScottyResponse m)) a 
 instance MonadTrans (ActionT e) where
     lift = ActionT . lift . lift . lift
 -- MonadError 定义
